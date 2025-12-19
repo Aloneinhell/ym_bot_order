@@ -6,7 +6,9 @@ from data.models import Cabinets, Shops
 
 async def get_cur_cabinet():
     async with AsyncSessionLocal() as session:
-        cur_cabinet = await session.scalar(select(Cabinets).where(Cabinets.is_chosen == True))
+        cur_shop = await get_cur_shop()
+        b_id = cur_shop.b_id
+        cur_cabinet = await session.scalar(select(Cabinets).where(Cabinets.b_id == b_id))
         return cur_cabinet
 
 

@@ -41,11 +41,14 @@ def get_shops_router():
     async def handle_no_shops_btn(callback: types.CallbackQuery):
         await callback.answer()
 
-    @router.callback_query(F.startswith('switch_shop_'))
+    @router.callback_query(F.data.startswith('switch_shop_'))
     async def handle_shop_switch(callback: types.CallbackQuery, state: FSMContext):
+        print(f"\n\nYEAH\n\n")
         chat_id = callback.message.chat.id
         msg_id = callback.message.message_id
-        c_id = callback.data[12:]
+        c_id_str = callback.data[12:]
+        c_id = int(c_id_str)
+        print(f"\n\nC_id = {c_id}\n\n")
         async with AsyncSessionLocal() as session:
             cur_shop = await get_cur_shop()
             await session.execute(update(Shops).where(Shops.c_id == cur_shop.c_id).values(

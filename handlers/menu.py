@@ -3,8 +3,11 @@ import os
 import dotenv
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
+from sqlalchemy import select
 
 from config import bot
+from data.database import AsyncSessionLocal
+from data.models import Cabinets
 from keyboards import inline
 from services.utils.get_api_creds import get_cur_cabinet, get_cur_shop
 from services.utils.orders_service import OrdersService
@@ -22,27 +25,29 @@ def get_menu_router():
     async def handle_orders_menu(callback: types.CallbackQuery):
         msg_id = callback.message.message_id
         chat_id = callback.message.chat.id
-        cur_cabinet = await get_cur_cabinet()
-        if cur_cabinet:
-            api_key = cur_cabinet.api_key
-            cur_shop = await get_cur_shop()
-            ym_service = YMService(api_key=api_key)
-            if cur_shop:
-                c_id = cur_shop.c_id
-                new_orders = await ym_service.get_today_orders(c_id=c_id)
-                delivered, canceled, another = await OrdersService.get_orders_count(orders=new_orders)
+        cur_shop = await get_cur_shop()
+        b_id = cur_shop.b_id
+        async with AsyncSessionLocal() as session:
+            cur_cabinet = await session.scalar(select(Cabinets).where(Cabinets.b_id == b_id))
+            if cur_cabinet:
+                api_key = cur_cabinet.api_key
+                ym_service = YMService(api_key=api_key)
+                if cur_shop:
+                    c_id = cur_shop.c_id
+                    new_orders = await ym_service.get_today_orders(c_id=c_id)
+                    delivered, canceled, another = await OrdersService.get_orders_count(orders=new_orders)
 
-                text = f"ℹ️<b>Заказы за СЕГОДНЯ</b>:\n"
+                    text = f"ℹ️<b>Заказы за СЕГОДНЯ</b>:\n"
+                    await bot.edit_message_text(text=text, chat_id=chat_id, message_id=msg_id,
+                                                parse_mode='HTML',
+                                                reply_markup=inline.orders_menu_kb(another_orders=another,
+                                                                                   delivered_orders=delivered,
+                                                                                   canceled_orders=canceled))
+            else:
+                text = f"<b>😔Не нашли магазинов в этом кабинете...</b>"
                 await bot.edit_message_text(text=text, chat_id=chat_id, message_id=msg_id,
                                             parse_mode='HTML',
-                                            reply_markup=inline.orders_menu_kb(another_orders=another,
-                                                                               delivered_orders=delivered,
-                                                                               canceled_orders=canceled))
-        else:
-            text = f"<b>😔Не нашли магазинов в этом кабинете...</b>"
-            await bot.edit_message_text(text=text, chat_id=chat_id, message_id=msg_id,
-                                        parse_mode='HTML',
-                                        reply_markup=inline.back_kb())
+                                            reply_markup=inline.back_kb())
 
     @router.callback_query(F.data == 'back_button')
     async def handle_back_button(callback: types.CallbackQuery, state: FSMContext):

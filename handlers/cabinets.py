@@ -24,7 +24,7 @@ def get_cabinets_router():
         chat_id = callback.message.chat.id
         msg_id = callback.message.message_id
         state_data = await state.get_data()
-        text = f"<Список кабинетов:\n\n>"
+        text = f"Список кабинетов:\n\n"
         async with AsyncSessionLocal() as session:
             cabinets_res = await session.scalars(select(Cabinets))
             if cabinets_res:
@@ -33,7 +33,7 @@ def get_cabinets_router():
                 if cabinets:
                     chosen_cabinet = ''
                     for cabinet in cabinets:
-                        text += f"Business_id: <code>{cabinet}</code>\n"
+                        text += f"Business_id: <code>{cabinet.b_id}</code>\n"
 
                     await state.update_data(is_cabinet_setted=True)
                     await bot.edit_message_text(text=text, chat_id=chat_id, message_id=msg_id,
@@ -75,13 +75,13 @@ def get_cabinets_router():
                     business = shop['business']
                     existing_shop = await session.scalar(select(Shops).where(Shops.c_id == shop['id']))
                     if not existing_shop:
-                        if not is_chosen_shop:
+                        if is_chosen_shop:
 
                             new_shop = Shops(
                                 c_id=shop['id'],
                                 domain=shop['domain'],
                                 b_id=business['id'],
-                                is_chosen=True
+                                is_chosen=False
                             )
                             session.add(new_shop)
                             await session.commit()
@@ -90,7 +90,7 @@ def get_cabinets_router():
                                 c_id=shop['id'],
                                 domain=shop['domain'],
                                 b_id=business['id'],
-                                is_chosen=False
+                                is_chosen=True
                             )
                             session.add(new_shop)
                             await session.commit()

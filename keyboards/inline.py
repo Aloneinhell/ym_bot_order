@@ -73,6 +73,7 @@ def shop_switch_kb(shops: list):
         builder = InlineKeyboardBuilder()
 
         for shop in shops:
+            print(f"\n\nCreating button with callback_data: switch_shop_{shop.c_id}\n\n")
             button_text = f"{shop.domain} - {shop.c_id}"
 
             # Добавляем кнопку с callback_data, содержащей ID заказа
