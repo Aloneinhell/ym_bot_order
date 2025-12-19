@@ -51,11 +51,11 @@ def get_orders_router():
             for item in order['items']:
                 article = item['article']
                 name = item['name']
-                items_list.append({'article': article, 'name': name})
-            text += f"<b>🆔ID - <code>{order['order_id']}</code></b>\n" \
-                    f"<blockquote>" \
-                    f"🏷️Товары - {article}/{name}\n" \
-                    f"</blockquote>"
+                if len(item['name']) > 80:
+                    name = item['name'][:80]
+                    items_list.append({'article': article, 'name': name})
+            text += f"<code>{order['order_id']}</code> - " \
+                    f"{name}\n"
         await bot.edit_message_text(text=text, chat_id=chat_id,
                                     message_id=msg_id,
                                     parse_mode='HTML',

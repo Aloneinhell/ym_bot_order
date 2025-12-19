@@ -6,14 +6,15 @@ class OrdersService:
         canceled = 0
         another = 0
         print(f"\n\nZAKAZI \n{orders}\n\n")
-        for order in orders:
-            status = order['status']
-            if status == 'CANCELLED':
-                canceled += 1
-            elif status == 'DELIVERED':
-                delivered += 1
-            else:
-                another += 1
+        if orders:
+            for order in orders:
+                status = order['status']
+                if status == 'CANCELLED':
+                    canceled += 1
+                elif status == 'DELIVERED':
+                    delivered += 1
+                else:
+                    another += 1
 
         return delivered, canceled, another
 

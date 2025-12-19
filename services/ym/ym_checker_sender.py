@@ -82,13 +82,18 @@ class YmCheckerSender:
                                         # Теперь обрабатываем весь заказ целиком
                                         if not all_keys_found:
                                             if order['order_id'] not in unsent_orders_ids:
-                                                text = f"По заказу <code>{order['order_id']}</code> <b>Нет ключей</b>\n\n" \
+                                                text = f"⛺Магазин <b>{shop.domain}</b>:\n\n" \
+                                                       f"По заказу <code>{order['order_id']}</code> <b>Нет ключей</b>\n\n" \
                                                        f"<b>Отправьте ручками!</b>"
                                                 for tg_id in admins_ids:
                                                     await bot.send_message(chat_id=tg_id, text=text,
                                                                            parse_mode='HTML',
                                                                            reply_markup=inline.del_msg())
                                                 unsent_orders_ids.append(order['order_id'])
+                                                print(f"\n\nОтправили uved po zakaz {order['order_id']} na \n{tg_id},"
+                                                      f"\n\nSPISKI:\n"
+                                                      f"Sent - {sent_orders_ids}\n"
+                                                      f"UNSENT - {unsent_orders_ids}\n\n")
                                             continue  # переходим к следующему заказу
 
                                         # Если все ключи найдены

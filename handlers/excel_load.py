@@ -62,7 +62,7 @@ def get_excel_eater_router():
                     await processing_msg.edit_text("❌ Файл не содержит данных или данные не распознаны")
                     return
                 async with AsyncSessionLocal() as session:
-                    iii = 1
+                    iii = 0
                     nnn = 0
 
                     for product in products_data:
