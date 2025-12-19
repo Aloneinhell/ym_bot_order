@@ -47,14 +47,15 @@ class YMService:
         print(today_formatted)  # Например: 10-12-2025
         order_data = await self.get_all_orders_shop(c_id=c_id)
         today_orders = []
-        for order in order_data:
-            order_datetime = order['creationDate']
-            order_date = order_datetime[0:10]
+        if order_data:
+            for order in order_data:
+                order_datetime = order['creationDate']
+                order_date = order_datetime[0:10]
 
-            if order_date == today_formatted:
-                order_details = await self.get_order_detail(c_id=c_id, order_id=order['id'])
-                today_orders.append(order_details)
-        return today_orders
+                if order_date == today_formatted:
+                    order_details = await self.get_order_detail(c_id=c_id, order_id=order['id'])
+                    today_orders.append(order_details)
+            return today_orders
 
     async def get_order_detail(self, c_id, order_id):
         url = f"{self.BASE_URL}campaigns/{c_id}/orders/{order_id}"
