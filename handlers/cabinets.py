@@ -24,6 +24,7 @@ def get_cabinets_router():
         chat_id = callback.message.chat.id
         msg_id = callback.message.message_id
         state_data = await state.get_data()
+        text = f"<Список кабинетов:\n\n>"
         async with AsyncSessionLocal() as session:
             cabinets_res = await session.scalars(select(Cabinets))
             if cabinets_res:
@@ -32,23 +33,18 @@ def get_cabinets_router():
                 if cabinets:
                     chosen_cabinet = ''
                     for cabinet in cabinets:
-                        if cabinet.is_chosen:
-                            chosen_cabinet = cabinet.b_id
-                        else:
-                            cabinets_list.append(cabinet)
+                        text += f"Business_id: <code>{cabinet}</code>\n"
+
                     await state.update_data(is_cabinet_setted=True)
-                    text = f"<b>Текущий кабинет:\n" \
-                           f"Business_id: {chosen_cabinet}</b>\n" \
-                           f"<blockquote>Чтобы выбрать другой кабинет нажмите на кнопку</blockquote>"
                     await bot.edit_message_text(text=text, chat_id=chat_id, message_id=msg_id,
                                                 parse_mode='HTML',
-                                                reply_markup=inline.cabinet_switch_kb(cabinets=cabinets_list))
+                                                reply_markup=inline.cabinets_info_kb())
                 else:
                     text = f"<b>😞Нет ни одного кабинета...\n\n</b>" \
                            f"Добавьте!"
                     await bot.edit_message_text(text=text, chat_id=chat_id, message_id=msg_id,
                                                 parse_mode='HTML',
-                                                reply_markup=inline.cabinet_switch_kb(cabinets=cabinets_list))
+                                                reply_markup=inline.cabinets_info_kb())
 
     @router.callback_query(F.data == 'cabinets_add')
     async def handle_cabinets_add(callback: types.CallbackQuery, state: FSMContext):
@@ -71,23 +67,35 @@ def get_cabinets_router():
             api_key = msg.text.strip()
             ym_service = YMService(api_key=api_key)
             shops = await ym_service.get_shops()
-            is_chosen = False
+
             business = {}
             if shops:
                 for shop in shops:
-                    if not is_chosen:
-                        is_chosen = True
+                    is_chosen_shop = await session.scalar(select(Shops).where(Shops.is_chosen == True))
                     business = shop['business']
+                    existing_shop = await session.scalar(select(Shops).where(Shops.c_id == shop['id']))
+                    if not existing_shop:
+                        if not is_chosen_shop:
 
-                    new_shop = Shops(
-                        c_id=shop['id'],
-                        domain=shop['domain'],
-                        b_id=business['id'],
-                        is_chosen=is_chosen
-                    )
+                            new_shop = Shops(
+                                c_id=shop['id'],
+                                domain=shop['domain'],
+                                b_id=business['id'],
+                                is_chosen=True
+                            )
+                            session.add(new_shop)
+                            await session.commit()
+                        else:
+                            new_shop = Shops(
+                                c_id=shop['id'],
+                                domain=shop['domain'],
+                                b_id=business['id'],
+                                is_chosen=False
+                            )
+                            session.add(new_shop)
+                            await session.commit()
 
-                    session.add(new_shop)
-                    await session.commit()
+
                 b_id = business['id']
                 new_cabinet = Cabinets(
                     api_key=api_key,

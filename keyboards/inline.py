@@ -56,29 +56,7 @@ def menu_kb(is_cabinet_setted, is_shop_setted):
 #     return InlineKeyboardMarkup(inline_keyboard=inline_kb)
 
 
-def cabinet_switch_kb(cabinets):
-    if cabinets:
-        builder = InlineKeyboardBuilder()
-
-        for cabinet in cabinets:
-            button_text = f"{cabinet.b_id}"
-
-            # Добавляем кнопку с callback_data, содержащей ID заказа
-            builder.add(InlineKeyboardButton(
-                text=button_text,
-                callback_data=f"switch_cabinet_{cabinet.b_id}"
-            ))
-        builder.add(
-            InlineKeyboardButton(text='➕🚪Добавить кабинет', callback_data='cabinets_add'
-                                 ))
-        builder.add(
-            InlineKeyboardButton(text='↩️Назад в меню', callback_data='back_button'
-                                 ))
-
-        builder.adjust(1)
-
-        return builder.as_markup()
-    else:
+def cabinets_info_kb():
         inline_kb = [
             [
                 InlineKeyboardButton(text='➕🚪Добавить кабинет', callback_data='cabinets_add')

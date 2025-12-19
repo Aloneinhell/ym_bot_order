@@ -26,7 +26,7 @@ OWNER1 = os.getenv('OWNER1')
 OWNER2 = os.getenv('OWNER2')
 DEV = os.getenv('DEV')
 
-STAFF = [OWNER1, OWNER2, DEV]
+STAFF = [OWNER1, OWNER2, DEV, 'pleaks_0', 'portall_23', 'taehyungswifenumber1', 'VladBrightty', 'Natalia251220']
 
 
 def get_start_router():

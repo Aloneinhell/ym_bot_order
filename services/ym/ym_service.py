@@ -25,8 +25,8 @@ class YMService:
         async with aiohttp.ClientSession() as session:
             try:
                 #real
-                #async with session.get(url=url, headers=self.headers) as response:
-                async with session.get(url=url, headers=self.headers, params=params) as response:
+                async with session.get(url=url, headers=self.headers) as response:
+                #async with session.get(url=url, headers=self.headers, params=params) as response:
                     response_text = await response.text()
                     print(f"\n\n📄 Тело ответа: {response_text}")
                     response.raise_for_status()  # Проверка на ошибки HTTP
@@ -62,8 +62,8 @@ class YMService:
         async with aiohttp.ClientSession() as session:
             try:
                 #real
-                #async with session.get(url=url, headers=self.headers) as response:
-                async with session.get(url=url, headers=self.headers, params=params) as response:
+                async with session.get(url=url, headers=self.headers) as response:
+                #async with session.get(url=url, headers=self.headers, params=params) as response:
                     response.raise_for_status()  # Проверка на ошибки HTTP
                     data = await response.json()
                     order = data['order']

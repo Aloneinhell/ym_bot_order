@@ -18,9 +18,10 @@ def get_shops_router():
         msg_id = callback.message.message_id
 
         cur_shop = await get_cur_shop()
-        b_id = cur_shop.b_id
+        cur_cabinet = await get_cur_cabinet()
+        #b_id = cur_cabinet.b_id
         async with AsyncSessionLocal() as session:
-            available_shops_res = await session.scalars(select(Shops).where(Shops.b_id == b_id))
+            available_shops_res = await session.scalars(select(Shops))
             available_shops = available_shops_res.all()
             text = f"<b>⛺Список магазинов:\n\n</b>" \
                    f"<blockquote>Текущий магазин: {cur_shop.c_id} - {cur_shop.domain}</blockquote>"

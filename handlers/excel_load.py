@@ -3,6 +3,7 @@ import time
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
+from sqlalchemy import select
 
 from config import bot
 from data.database import AsyncSessionLocal
@@ -62,28 +63,46 @@ def get_excel_eater_router():
                     return
                 async with AsyncSessionLocal() as session:
                     iii = 1
+                    nnn = 0
 
                     for product in products_data:
-                        loaded_msg_id = state_data['msg_id']
-                        new_product = Products(
-                            p_name=product['p_name'],
-                            p_key=product['p_key'],
-                            p_guide=product['p_guide'],
-                            p_art=product['p_art']
-                        )
-                        session.add(new_product)
-                        await session.commit()
-                        load_text = f"💾<b>Загрузка ({iii}/{len(products_data)})</b>\n" \
-                                    f"\n" \
-                                    f"Загружен ключ: {product['p_key']}"
-                        loading_msg = await bot.edit_message_text(text=load_text, chat_id=chat_id,
-                                                                  message_id=loaded_msg_id,
-                                                                  parse_mode='HTML')
-                        iii += 1
-                        time.sleep(0.2)
-                        await state.update_data(msg_id=loading_msg.message_id)
+                        existing_product = await session.scalar(select(Products).
+                                                                where(Products.p_key == product['p_key']))
+                        if not existing_product:
+                            loaded_msg_id = state_data['msg_id']
+                            new_product = Products(
+                                p_name=product['p_name'],
+                                p_key=product['p_key'],
+                                p_guide=product['p_guide'],
+                                p_art=product['p_art']
+                            )
+                            session.add(new_product)
+                            await session.commit()
+
+                            load_text = f"💾<b>Загрузка ({iii}/{len(products_data)})</b>\n" \
+                                        f"\n" \
+                                        f"Загружен ключ: {product['p_key']}"
+                            loading_msg = await bot.edit_message_text(text=load_text, chat_id=chat_id,
+                                                                      message_id=loaded_msg_id,
+                                                                      parse_mode='HTML')
+
+                            iii += 1
+                            time.sleep(0.2)
+                            await state.update_data(msg_id=loading_msg.message_id)
+                        if existing_product:
+                            load_text = f"💾<b>Загрузка ({iii}/{len(products_data)})</b>\n" \
+                                        f"\n" \
+                                        f"Пропущен ключ(дубликат): {product['p_key']}"
+                            loading_msg = await bot.edit_message_text(text=load_text, chat_id=chat_id,
+                                                                      message_id=loaded_msg_id,
+                                                                      parse_mode='HTML')
+                            await state.update_data(msg_id=loading_msg.message_id)
+                            nnn += 1
+                            time.sleep(0.2)
+
                     final_text = f"✅<b>Загрузка прошла успешно!</b>\n\n" \
-                                 f"Загружено товаров - {iii}"
+                                 f"Загружено товаров - {iii}\n\n" \
+                                 f"Не загружено (дубликаты) - {nnn}"
                     final_msg_id = state_data['msg_id']
                     await bot.edit_message_text(text=final_text, chat_id=chat_id,
                                                 message_id=final_msg_id,

@@ -17,7 +17,7 @@ TEST_DATABASE_URL = f"postgresql+asyncpg://{os.getenv('TEST_DB_USER')}@localhost
 
 DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-engine = create_async_engine(TEST_DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL, echo=True)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
